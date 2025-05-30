@@ -1,9 +1,8 @@
 from django.db import models
-
-# Create your models here.
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from cloudinary.models import CloudinaryField
 
 
 class CustomUserManager(BaseUserManager):
@@ -25,12 +24,30 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class GenderChoices(models.TextChoices):
+        MALE = 'male', _('Male')
+        FEMALE = 'female', _('Female')
+        OTHER = 'other', _('Other')
+        NOT_SPECIFIED = 'not_specified', _('Not Specified')
+
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    
+    gender = models.CharField(
+        max_length=20,
+        choices=GenderChoices.choices,
+        default=GenderChoices.NOT_SPECIFIED,
+        blank=True,
+        null=True
+    )
+
+    date_of_birth = models.DateField(blank=True, null=True)
+
+    profile_image = CloudinaryField('profile_image', blank=True, null=True)
+    cover_image = CloudinaryField('cover_image', blank=True, null=True)
 
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -45,12 +62,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-
 class JobSeekerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='job_seeker_profile')
-    resume = models.FileField(upload_to='resumes/')
-    bio = models.TextField(blank=True)
-    skills = models.TextField(blank=True)
+    resume = models.FileField(upload_to='resumes/', blank=True, null=True)
+    bio = models.TextField(blank=True, default='')
+    skills = models.TextField(blank=True, default='')
 
     def __str__(self):
         return f"{self.user.email} - Job Seeker"
@@ -59,8 +75,8 @@ class JobSeekerProfile(models.Model):
 class EmployerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employer_profile')
     company_name = models.CharField(max_length=255)
-    company_description = models.TextField(blank=True)
-    website = models.URLField(blank=True)
+    company_description = models.TextField(blank=True, default='')
+    website = models.URLField(blank=True, default='')
 
     def __str__(self):
         return f"{self.user.email} - Employer"
