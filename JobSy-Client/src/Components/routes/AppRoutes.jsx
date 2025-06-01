@@ -16,6 +16,11 @@ import ActivateAccount from "../AuthenTicationSection/AccountActivation";
 import ResetPassword from "../AuthenTicationSection/ForgotEmail";
 import ResetPasswordConfirm from "../AuthenTicationSection/ResetPasswordConfirm";
 import ProfilePage from "../SidebarComponent/ProfilePageComponents/ProfilePage";
+import JobPostForm from "../PostJobForm/job-post-form";
+import SavedJobs from "../UserDashboard/SavedJobs";
+import ApplicationForm from "../Pages/ApplicationComponents/ApplicationForm";
+import ApplicationList from "../UserDashboard/ApplicationList";
+import SupportPage from "../Pages/Support";
 
 
 const AppRoutes = () => {
@@ -31,10 +36,14 @@ const AppRoutes = () => {
            <Route path="/joblist" element={<JobListingSection />} /> {/* This remains as is */}
            <Route path="/jobs/:id" element={<JobDetails />} />
            <Route path="/signup" element={<SignUp/>} />
+           <Route path="/postform" element={<JobPostForm/>} />
            <Route path="/login" element={<Login/>} />
            <Route path="/activate/:uid/:token" element={<ActivateAccount/>} />
            <Route path="/forgot" element={<ResetPassword/>} />
            <Route path="/password/reset/confirm/:uid/:token" element={<ResetPasswordConfirm/>} />
+           <Route path="/jobs/:id/apply" element={<ApplicationForm />} />
+
+
 
         </Route>
 
@@ -48,6 +57,9 @@ const AppRoutes = () => {
                 <Route path="" element={<Dashboard/>}/>
                 <Route path="joblistitem" element={<JobListingSection/>}/>
                 <Route path="profile" element={<ProfilePage/>}/>
+                <Route path="saved" element={<SavedJobs/>}/>
+                <Route path="applications" element={<ApplicationList/>}/>
+                <Route path="support" element={<SupportPage/>}/>
 
             </Route>
 

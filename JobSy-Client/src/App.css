@@ -1,0 +1,5 @@
+/* For WebKit-based browsers (Chrome, Safari) */
+.calendar-icon-black::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Makes it black */
+  cursor: pointer;
+}

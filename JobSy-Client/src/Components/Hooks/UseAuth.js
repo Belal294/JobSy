@@ -1,10 +1,9 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import apiClient from "../FetchingApi/api-client";
 
 const useAuth = () => {
   const [user, setUser] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [loadingInitialAuth, setLoadingInitialAuth] = useState(true);
 
   const getToken = () => {
     const token = localStorage.getItem("authTokens");
@@ -12,11 +11,6 @@ const useAuth = () => {
   };
 
   const [authTokens, setAuthTokens] = useState(getToken());
-
-  // ✅ Correct derived login status
-  const isLoggedIn = useMemo(() => {
-    return !!authTokens?.access && !!user;
-  }, [authTokens, user]);
 
   const handleAPIError = (error, defaultMessage = "Something Went Wrong! Try Again") => {
     console.error(error);
@@ -29,39 +23,23 @@ const useAuth = () => {
     return { success: false, message: defaultMessage };
   };
 
-  const fetchUserProfile = useCallback(async (tokens) => {
-    const currentTokens = tokens || authTokens;
-    if (!currentTokens?.access) {
-      setUser(null);
-      return;
-    }
-
+  const fetchUserProfile = useCallback(async () => {
+    if (!authTokens?.access) return;
     try {
       const response = await apiClient.get("/auth/users/me/", {
-        headers: { Authorization: `JWT ${currentTokens.access}` },
+        headers: { Authorization: `JWT ${authTokens.access}` },
       });
       setUser(response.data);
     } catch (error) {
-      console.error("Error Fetching user profile:", error);
-      logoutUser();
+      console.error("Error Fetching user", error);
+      logout();
     }
   }, [authTokens]);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      setLoadingInitialAuth(true);
-      const storedTokens = getToken();
-      if (storedTokens?.access) {
-        setAuthTokens(storedTokens);
-        await fetchUserProfile(storedTokens);
-      } else {
-        setUser(null);
-      }
-      setLoadingInitialAuth(false);
-    };
-
-    initializeAuth();
-  }, [fetchUserProfile]);
+    if (authTokens) fetchUserProfile();
+    else setUser(null);
+  }, [authTokens, fetchUserProfile]);
 
   const updateUserProfile = async (data) => {
     setErrorMsg("");
@@ -69,10 +47,8 @@ const useAuth = () => {
       await apiClient.put("/auth/users/me/", data, {
         headers: { Authorization: `JWT ${authTokens?.access}` },
       });
-      await fetchUserProfile();
-      return { success: true, message: "Profile updated successfully." };
     } catch (error) {
-      return handleAPIError(error, "Failed to update profile.");
+      return handleAPIError(error);
     }
   };
 
@@ -82,7 +58,6 @@ const useAuth = () => {
       await apiClient.post("/auth/users/set_password/", data, {
         headers: { Authorization: `JWT ${authTokens?.access}` },
       });
-      return { success: true, message: "Password changed successfully." };
     } catch (error) {
       return handleAPIError(error);
     }
@@ -92,14 +67,13 @@ const useAuth = () => {
     setErrorMsg("");
     try {
       const response = await apiClient.post("/auth/jwt/create/", userData);
-      const newAuthTokens = response.data;
-      setAuthTokens(newAuthTokens);
-      localStorage.setItem("authTokens", JSON.stringify(newAuthTokens));
-      await fetchUserProfile(newAuthTokens);
-      return { success: true };
+      setAuthTokens(response.data);
+      localStorage.setItem("authTokens", JSON.stringify(response.data));
+      await fetchUserProfile();
+      return true;
     } catch (error) {
       setErrorMsg(error.response?.data?.detail || "Login failed");
-      return { success: false, message: error.response?.data?.detail || "Login failed" };
+      return false;
     }
   };
 
@@ -116,7 +90,7 @@ const useAuth = () => {
     }
   };
 
-  const logoutUser = () => {
+  const logout = () => {
     setAuthTokens(null);
     setUser(null);
     localStorage.removeItem("authTokens");
@@ -150,17 +124,16 @@ const useAuth = () => {
 
   return {
     user,
-    isLoggedIn, // ✅ This is now a derived value from tokens & user
     errorMsg,
-    loadingInitialAuth,
+    authTokens, 
+    token: authTokens?.access, 
     loginUser,
     registerUser,
-    logoutUser,
+    logout,
     updateUserProfile,
     changePassword,
     resetPassword,
     resetPasswordConfirm,
-    fetchUserProfile,
   };
 };
 

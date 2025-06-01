@@ -1,35 +1,31 @@
 import { useEffect, useState } from "react";
 import apiClient from "../FetchingApi/api-client";
 
-
-
 const UseFetchJobList = () => {
-  const [jobs, setjobs] = useState([]);
+  const [fetchedJobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true); // Spinner state
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchJobs = async () => {
+      setLoading(true); // Start spinner
       try {
         const res = await apiClient.get("/jobs/");
-
-        console.log(" Full category API response:", res.data);
-
         const data = Array.isArray(res.data)
           ? res.data
           : res.data.results || [];
-
-        console.log(" Parsed categories:", data);
-
-        setjobs(data);
+        setJobs(data);
       } catch (error) {
-        console.error(" Failed to fetch categories:", error);
-        setjobs([]);
+        console.error("Failed to fetch jobs:", error);
+        setJobs([]);
+      } finally {
+        setLoading(false); // Stop spinner
       }
     };
 
-    fetchCategories();
+    fetchJobs();
   }, []);
 
-  return jobs;
+  return { fetchedJobs, loading }; 
 };
 
 export default UseFetchJobList;

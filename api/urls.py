@@ -10,12 +10,18 @@ from applications.views import ApplicationViewSet
 from analytics.views import EmployerAnalyticsView, AdminAnalyticsView, AdminAnalyticsOverview
 from django.conf import settings
 from django.conf.urls.static import static
+from saved.views import SavedJobListCreateView, SavedJobDetailView
+from notifications.views import NotificationListView, NotificationDetailView
+
+
 
 router = DefaultRouter()
 
 router.register('users', UserViewSet, basename='user')
 router.register('jobseeker-profiles', JobSeekerProfileViewSet, basename='jobseeker-profile')
 router.register('employer-profiles', EmployerProfileViewSet, basename='employer-profile')
+
+
 
 router.register('posts', PostViewSet, basename='post')
 
@@ -26,9 +32,18 @@ router.register('applications', ApplicationViewSet, basename='application')
 urlpatterns = [
     path('activate/<uid>/<token>/', activate_user, name='activate-user'),
 
+
     # Custom auth views (optional)
     path('auth/login/', LoginView.as_view(), name='custom-login'),
     path('auth/register/', RegisterView.as_view(), name='custom-register'),
+
+
+    path("saved-jobs/", SavedJobListCreateView.as_view(), name="saved-jobs"),
+    path('saved-jobs/<int:pk>/', SavedJobDetailView.as_view(), name='saved-job-detail'),
+
+    path('notifications/', NotificationListView.as_view(), name='notification-list'),
+    path('notifications/<int:pk>/', NotificationDetailView.as_view(), name='notification-detail'),
+
 
     # Email verification (optional)
     path('auth/verify/', VerifyEmailView.as_view(), name='verify-email'),
@@ -52,3 +67,5 @@ urlpatterns = [
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+

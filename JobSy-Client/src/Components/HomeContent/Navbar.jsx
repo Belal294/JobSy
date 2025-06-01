@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react"; // Import useEffect
+import { useState, useContext, useEffect } from "react";
 import { Star, Lock, Menu, X, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../Context/AuthContext";
@@ -6,16 +6,11 @@ import AuthContext from "../Context/AuthContext";
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-
-  // Destructure isLoggedIn, user, and logout from AuthContext
-  const { isLoggedIn, user, logout, loadingInitialAuth } = useContext(AuthContext);
-  console.log("Logged in:", isLoggedIn);
-  console.log("User object:", user);
-
-
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Add useEffect to log the user object when it changes
+  const isLoggedIn = !!user;
+
   useEffect(() => {
     if (user) {
       console.log("User object from AuthContext:", user);
@@ -23,7 +18,7 @@ export default function Navbar() {
     } else {
       console.log("User object is null or undefined.");
     }
-  }, [user]); // Depend on the 'user' object so this runs when 'user' changes
+  }, [user]);
 
   const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
@@ -33,6 +28,14 @@ export default function Navbar() {
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
     navigate("/login");
+  };
+
+  const handlePostJobClick = () => {
+    if (!isLoggedIn) {
+      alert("Please log in to post a job.");
+      return;
+    }
+    navigate("/postform");
   };
 
   const navItems = [
@@ -46,17 +49,13 @@ export default function Navbar() {
   const userDisplayName = user?.first_name || user?.email?.split("@")[0] || "Profile";
   const userProfileImage = user?.profile_image;
 
-  if (loadingInitialAuth) {
-    return null;
-  }
-
   return (
     <header className="z-10 bg-transparent">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-white font-bold text-xl tracking-wider">JobSy</Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden ml-40 md:flex items-center space-x-8">
           {navItems.map(({ name, to }) => (
             <Link key={name} to={to} className="text-white hover:text-gray-300 transition-colors">
               {name}
@@ -66,7 +65,10 @@ export default function Navbar() {
 
         {/* Desktop Right Actions */}
         <div className="hidden md:flex items-center space-x-4">
-          <button className="btn btn-outline text-white border-white hover:bg-white hover:text-black px-4 py-2 rounded-md">
+          <button
+            onClick={handlePostJobClick}
+            className="btn btn-outline text-white border-white hover:bg-white hover:text-black px-4 py-2 rounded-md flex items-center"
+          >
             <Star className="w-4 h-4 mr-2" /> Post a Job
           </button>
 
@@ -92,10 +94,10 @@ export default function Navbar() {
               {isProfileDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
                   <Link
-                    to="/profile"
+                    to="/dashboard/profile"
                     onClick={() => {
-                        setIsProfileDropdownOpen(false);
-                        setIsMobileMenuOpen(false);
+                      setIsProfileDropdownOpen(false);
+                      setIsMobileMenuOpen(false);
                     }}
                     className="block px-4 py-2 text-gray-800 hover:bg-gray-100 flex items-center"
                   >
@@ -115,18 +117,13 @@ export default function Navbar() {
 
         {/* Mobile Menu Button & User Icon */}
         <div className="md:hidden flex items-center space-x-2">
-          {isLoggedIn && user && userProfileImage (
+          {isLoggedIn && userProfileImage && (
             <button onClick={toggleProfileDropdown} className="text-white flex items-center">
-              {userProfileImage ? (
-                <img
-                    src={userProfileImage}
-                    alt="Profile"
-                    style={{ width: "40px", height: "40px", borderRadius: "50%", border: "2px solid white" }}
-                  />
-
-              ) : (
-                <User className="w-6 h-6" />
-              )}
+              <img
+                src={userProfileImage}
+                alt="Profile"
+                style={{ width: "40px", height: "40px", borderRadius: "50%", border: "2px solid white" }}
+              />
             </button>
           )}
           <button onClick={toggleMenu} className="text-white">
@@ -153,7 +150,10 @@ export default function Navbar() {
           ))}
 
           <div className="flex flex-col gap-4 mt-6 w-full max-w-xs">
-            <button className="btn btn-outline text-white border-white hover:bg-white hover:text-black px-4 py-3 rounded-md text-lg">
+            <button
+              onClick={handlePostJobClick}
+              className="btn btn-outline text-white border-white hover:bg-white hover:text-black px-4 py-3 rounded-md text-lg flex items-center justify-center"
+            >
               <Star className="w-5 h-5 mr-2" /> Post a Job
             </button>
 
@@ -168,7 +168,7 @@ export default function Navbar() {
             ) : (
               <>
                 <Link
-                  to="/profile"
+                  to="/dashboard/profile"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-md text-lg flex items-center justify-center"
                 >

@@ -4,7 +4,7 @@ import SidebarAction from "./SidebarAction";
 export default function RightSidebar() {
   return (
     <div className="w-full lg:w-72 bg-white rounded-lg shadow-lg p-6 flex-shrink-0">
-      <button className="w-full py-3 bg-blue-600 text-white rounded-md mb-6 font-semibold shadow-md hover:bg-blue-700 transition-colors">
+      <button className="w-full py-3 bg-green-600 text-white rounded-md mb-6 font-semibold shadow-md hover:bg-green-700 transition-colors">
         Edit Job
       </button>
 
@@ -13,7 +13,7 @@ export default function RightSidebar() {
         <SidebarAction text="View Cost & Performance" icon={<ChevronRight size={16} className="text-gray-500" />} />
         <SidebarAction text="Find Candidates for this Job" icon={<ChevronRight size={16} className="text-gray-500" />} />
         <button className="w-full py-3 bg-white border border-gray-300 text-gray-700 rounded-md flex items-center justify-center font-medium hover:bg-gray-100 transition-colors">
-          <Plus size={16} className="mr-2 text-blue-500" />
+          <Plus size={16} className="mr-2 text-green-500" />
           Add Candidate
         </button>
       </div>
@@ -32,7 +32,7 @@ export default function RightSidebar() {
           <div className="flex items-center">
             <span className="h-2.5 w-2.5 bg-green-500 rounded-full mr-2"></span>
             <span className="font-semibold text-gray-900">Open</span>
-            <button className="text-blue-600 ml-2 text-sm font-medium hover:underline">(Pause)</button>
+            <button className="text-green-600 ml-2 text-sm font-medium hover:underline">(Pause)</button>
           </div>
         </div>
         <div className="flex justify-between items-center text-gray-700">

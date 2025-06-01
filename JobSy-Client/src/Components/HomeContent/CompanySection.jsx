@@ -1,9 +1,13 @@
 import React from 'react';
 import UseFetchJobList from '../Hooks/UseFetchJobList';
 
-
 export default function CompanySection() {
-  const companies = UseFetchJobList().slice(0, 8); 
+  const { fetchedJobs, loading } = UseFetchJobList();
+  const companies = fetchedJobs.slice(0, 8); 
+
+  if (loading) {
+    return <p>Loading companies...</p>;
+  }
 
   return (
     <section className="py-16 px-4 bg-gray-50">
@@ -21,7 +25,7 @@ export default function CompanySection() {
                 className="flex items-center justify-center p-4 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
               >
                 <img
-                  src={company.image} 
+                  src={company.logo_image} 
                   alt={`${company.name} logo`}
                   className="max-h-12 w-auto object-contain filter brightness-0 contrast-100"
                 />

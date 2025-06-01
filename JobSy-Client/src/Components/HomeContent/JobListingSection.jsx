@@ -1,55 +1,62 @@
-// src/pages/JobListingSection.jsx (or src/components/JobListingSection.jsx)
+import default_logo from '../../assets/Deafult/defalt-logo.png';
 
 import React, { useEffect, useState, useMemo } from "react";
 import { MapPin, Search } from "lucide-react";
-import UseFetchJobList from "../Hooks/UseFetchJobList"; // Assuming this hook fetches all jobs
-import { Link, useLocation } from "react-router-dom"; // Import useLocation
+import  UseFetchJobList  from "../Hooks/UseFetchJobList";
+import { Link, useLocation } from "react-router-dom";
 
 export default function JobListingSection({
   currentJobId,
   fromDetailsPage,
   isHomePage,
 }) {
-  const fetchedJobs = UseFetchJobList(); // Fetches all available jobs
-  const location = useLocation(); // Hook to access URL's location object
+  const { fetchedJobs, loading } = UseFetchJobList();
+  const location = useLocation();
 
-  // Parse URL query parameters once when location.search changes
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
-  // Initialize state from URL query parameters or default values
-  // 'title' from URL maps to searchTerm
-  // 'job_type' from URL maps to selectedJobType
-  // 'location' from URL maps to selectedLocation
-  const [searchTerm, setSearchTerm] = useState(queryParams.get('title') || "");
-  const [selectedJobType, setSelectedJobType] = useState(queryParams.get('job_type') || "all");
-  const [selectedLocation, setSelectedLocation] = useState(queryParams.get('location') || "all"); // New state for location filter
+  // States for filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedJobType, setSelectedJobType] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedGender, setSelectedGender] = useState("any");
 
-  // Derive unique locations and job types from fetchedJobs for dropdowns
+  useEffect(() => {
+    setSearchTerm(queryParams.get('title') || "");
+    setSelectedJobType(queryParams.get('job_type') || "all");
+    setSelectedLocation(queryParams.get('location') || "all");
+
+  }, [queryParams]); 
+
   const uniqueLocations = useMemo(() => {
+
+    if (!fetchedJobs) return ['all'];
     const locations = new Set();
     fetchedJobs.forEach(job => {
       if (job.location) {
         locations.add(job.location);
       }
     });
-    // Add 'all' option and sort alphabetically
     return ['all', ...Array.from(locations).sort()];
   }, [fetchedJobs]);
 
   const uniqueJobTypes = useMemo(() => {
+  
+    if (!fetchedJobs) return ['all'];
     const types = new Set();
     fetchedJobs.forEach(job => {
       if (job.job_type) {
         types.add(job.job_type);
       }
     });
-    // Add 'all' option and sort alphabetically
     return ['all', ...Array.from(types).sort()];
   }, [fetchedJobs]);
 
   // Filter jobs based on current state (which can be initialized from URL or user input)
   const jobs = useMemo(() => {
+    // Return empty array if fetchedJobs is not yet available or loading
+    if (loading || !fetchedJobs) return [];
+
     let currentJobs = fetchedJobs;
 
     // Filter out the current job if on a details page
@@ -66,11 +73,9 @@ export default function JobListingSection({
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         currentJobs = currentJobs.filter(
           (job) =>
-            job.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-            (job.company_name &&
-              job.company_name.toLowerCase().includes(lowerCaseSearchTerm)) ||
-            (job.location &&
-              job.location.toLowerCase().includes(lowerCaseSearchTerm))
+            job.title?.toLowerCase().includes(lowerCaseSearchTerm) || // Added optional chaining
+            (job.company_name && job.company_name.toLowerCase().includes(lowerCaseSearchTerm)) ||
+            (job.location?.toLowerCase().includes(lowerCaseSearchTerm)) // Added optional chaining
         );
       }
 
@@ -86,6 +91,7 @@ export default function JobListingSection({
 
       // Filter by selected gender
       if (selectedGender !== "any") {
+        // Ensure job.gender exists and matches, or handle cases where it might be null/empty
         currentJobs = currentJobs.filter((job) => job.gender === selectedGender);
       }
     }
@@ -102,9 +108,10 @@ export default function JobListingSection({
     fromDetailsPage,
     searchTerm,
     selectedJobType,
-    selectedLocation, // Added to dependencies
+    selectedLocation,
     selectedGender,
     isHomePage,
+    loading 
   ]);
 
   // Determine the section title based on props
@@ -114,12 +121,20 @@ export default function JobListingSection({
     ? "Latest Job Openings"
     : `${jobs.length} Job${jobs.length !== 1 ? "s" : ""} Listed`;
 
-  // Options for Gender dropdown (Job Type options are now dynamic)
+  // Options for Gender dropdown
   const genderOptions = [
     { value: "any", label: "Any" },
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-gray-50 px-4 sm:px-6 lg:px-12 py-8">
@@ -244,8 +259,8 @@ export default function JobListingSection({
                   {/* Left Section */}
                   <div className="flex items-center space-x-4 mb-4 sm:mb-0">
                     <img
-                      src={job.image || "/placeholder.svg?height=60&width=60"}
-                      alt={`${job.company_name || "Company"} logo`}
+                      src={job.logo_image || default_logo} // Using default_logo
+                      alt={`${job.company_name || job.company_profile_name || "Company"} logo`} // Better fallback
                       className="w-16 h-16 object-contain"
                     />
                     <div>
@@ -253,7 +268,7 @@ export default function JobListingSection({
                         {job.title}
                       </h3>
                       <p className="text-gray-500 text-sm mb-1">
-                        {job.company_name || "Unknown Company"}
+                        {job.company_name || job.company_profile_name || "Unknown Company"} {/* Improved fallback for company name */}
                       </p>
                       <div className="flex items-center text-gray-400 text-sm">
                         <MapPin className="w-4 h-4 mr-1" />
@@ -263,13 +278,13 @@ export default function JobListingSection({
                   </div>
 
                   {/* Right Section */}
-                  <div className=" flex flex-col items-start sm:items-end space-y-2">
+                  <div className="flex flex-col items-start sm:items-end space-y-2">
                     <span
                       className={`border-none badge ${
                         job.job_type === "internship"
-                          ? "bg-yellow-500" // Tailwind equivalent for badge-warning
+                          ? "bg-yellow-500"
                           : job.job_type === "full_time"
-                          ? "bg-green-500" // Tailwind equivalent for badge-success
+                          ? "bg-green-500"
                           : job.job_type === "part_time"
                           ? "bg-blue-500"
                           : job.job_type === "contract"
@@ -277,7 +292,7 @@ export default function JobListingSection({
                           : "bg-gray-500" // Fallback color
                       } text-white px-4 py-2 text-sm capitalize rounded-full`}
                     >
-                      {job.job_type.replace(/_/g, " ")}
+                      {job.job_type?.replace(/_/g, " ") || "N/A"} {/* Added optional chaining and N/A fallback */}
                     </span>
                     <span className="mr-3 text-sm text-gray-600">${job.salary || "N/A"}</span>
                   </div>

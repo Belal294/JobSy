@@ -1,12 +1,12 @@
-from rest_framework import viewsets, permissions, status, filters
+from rest_framework import viewsets, permissions, status, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
-
 from .models import Application
 from .serializers import ApplicationSerializer
 from .filters import ApplicationFilter
+from notifications.models import Notification
 
 class ApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = ApplicationSerializer
@@ -28,17 +28,30 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         return queryset.filter(applicant=user)
 
     def perform_create(self, serializer):
-        application = serializer.save(applicant=self.request.user)
+        user = self.request.user
+        job = serializer.validated_data['job']
 
+        # Prevent duplicate applications
+        if Application.objects.filter(job=job, applicant=user).exists():
+            raise serializers.ValidationError("You have already applied to this job!")
+
+        # Save application
+        application = serializer.save(applicant=user)
+
+        # Send email to applicant
         send_mail(
             subject='Your Job Application Submitted',
-            message=(
-                f'Hello {self.request.user.first_name},\n\n'
-                f'Your application for "{application.job.title}" has been received.'
-            ),
+            message=f'Hello {user.first_name},\n\nYour application for "{job.title}" has been received.',
             from_email='noreply@jobsy.com',
-            recipient_list=[self.request.user.email],
+            recipient_list=[user.email],
             fail_silently=True,
+        )
+
+        # Create notification for employer
+        Notification.objects.create(
+            recipient=job.posted_by,  # Assumes Job model has a `posted_by` ForeignKey to User
+            application=application,
+            message=f"{user.get_full_name() or user.email} applied to your job '{job.title}'."
         )
 
     @action(detail=True, methods=['post'], url_path='set-status')

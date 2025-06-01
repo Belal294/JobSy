@@ -1,20 +1,100 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Heart, MapPin, Building2, Clock, Facebook, Twitter, Linkedin, PinIcon as Pinterest } from "lucide-react";
 import apiClient from "../../FetchingApi/api-client";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import JobListingSection from "../../HomeContent/JobListingSection";
+import defalut_logo from '../../../assets/Deafult/defalt-logo.png'
+import default_company from '../../../assets/Deafult/Defalt-company.jpg'
+import { toast } from "react-toastify";
+import AuthContext from "../../Context/AuthContext";
 
 export default function JobDetails() {
   const { id } = useParams();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user, token } = useContext(AuthContext);
+
+  const [savedJobs, setSavedJobs] = useState([]); 
+
+
+  useEffect(() => {
+    const fetchSavedJobs = async () => {
+      if (user && token) {
+        try {
+          const response = await apiClient.get("/saved-jobs/", {
+            headers: {
+              Authorization: `JWT ${token}`,
+            },
+          });
+       
+          setSavedJobs(response.data.map(item => item.job.id)); 
+        } catch (error) {
+          console.error("Error fetching saved jobs:", error);
+       
+          setSavedJobs([]); 
+        }
+      } else {
+        setSavedJobs([]); 
+      }
+    };
+
+    fetchSavedJobs();
+  }, [user, token]); 
+
+  const handleSaveButton = async (jobId) => {
+    if (!user) {
+      toast.error("Please log in to save jobs.");
+      return;
+    }
+
+
+    if (savedJobs.includes(jobId)) {
+      toast.info("This job is already saved.");
+      return;
+    }
+
+    try {
+      const response = await apiClient.post("/saved-jobs/", { job: jobId }, {
+        headers: {
+          Authorization: `JWT ${token}`,
+        },
+      });
+
+      if (response.status === 201) {
+        toast.success("Job saved successfully!");
+    
+        setSavedJobs(prevSavedJobs => [...prevSavedJobs, jobId]); 
+      } else {
+
+    
+        toast.info("This job is already saved."); 
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        toast.error("You have already saved this job.");
+
+        setSavedJobs(prevSavedJobs => {
+          if (!prevSavedJobs.includes(jobId)) {
+            return [...prevSavedJobs, jobId];
+          }
+          return prevSavedJobs;
+        });
+      } else if (error.response && error.response.status === 401) {
+        toast.error("Please log in to save jobs.");
+      } else {
+        toast.error("Failed to save job.");
+      }
+      console.error("Error saving job:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
         const response = await apiClient.get(`/jobs/${id}`);
         setJob(response.data);
+        console.log("check data", response.data);
       } catch (err) {
         setError("Failed to load job details. Please try again later.");
         console.error("Error fetching job details:", err);
@@ -47,6 +127,8 @@ export default function JobDetails() {
     return text.split(/[\r\n]+/).filter(line => line.trim() !== '');
   };
 
+  const isJobSaved = job && savedJobs.includes(job.id);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -77,20 +159,21 @@ export default function JobDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-6">
-              {/* Company Logo */}
+         
               <div className="w-24 h-24 bg-white border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
-                {job.image ? (
-                  <img src={job.image} alt={job.company_name || "Company Logo"} className="object-cover w-full h-full" />
+             
+                {job.logo_image ? (
+                  <img src={job.logo_image} alt={job.company_name || "Company Logo"} className="object-cover w-full h-full" />
                 ) : (
-                  <div className="text-black font-bold text-xl">{job.company_name ? job.company_name.charAt(0) : "N/A"}</div>
+                  <img src={defalut_logo} alt="Default Company Logo" className="object-cover w-full h-full" />
                 )}
               </div>
 
-              {/* Job Info */}
+       
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-gray-900 mb-3">{job.title || "Job Title N/A"}</h1>
                 <div className="flex items-center space-x-6 text-gray-600">
@@ -110,111 +193,129 @@ export default function JobDetails() {
               </div>
             </div>
 
-            {/* Action Buttons */}
+          
             <div className="flex items-center space-x-3">
-              <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                <Heart className="w-4 h-4" />
-                <span>Save Job</span>
+              <button
+                className={`flex items-center space-x-2 px-4 py-2 border rounded-lg transition-colors duration-200
+                  ${isJobSaved 
+                    ? 'border-green-500 text-green-600 bg-green-50' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-green-400 hover:text-green-500'
+                  }`}
+                onClick={() => handleSaveButton(job.id)}
+                disabled={isJobSaved} 
+              >
+                <Heart className={`w-4 h-4 ${isJobSaved ? 'fill-green-500 text-green-500' : 'text-gray-700 group-hover:text-green-500'}`} />
+                <span>{isJobSaved ? "Saved" : "Save Job"}</span>
               </button>
-              <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Apply Now</button>
+              <Link to={`/jobs/${id}/apply`} className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Apply Now</Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
+
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
+      
           <div className="lg:col-span-2 space-y-8">
-            {/* ... (Hero Image, Job Description, Responsibilities, Education + Experience, Other Benefits, Bottom Action Buttons) ... */}
+     
             <div className="w-full h-64 bg-gray-300 rounded-lg flex items-center justify-center overflow-hidden">
-                {job.image ? (
-                  <img src={job.image} alt="Workspace" className="object-cover w-full h-full" />
+           
+              {job.company_image ? (
+                <img src={job.company_image} alt="Company Logo" className="object-cover w-full h-full" />
+              ) : (
+                <img src={default_company} alt="Default Company Image" className="object-cover w-full h-full" />
+              )}
+
+            </div>
+
+          
+            <div>
+              <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
+                <span className="w-1 h-6 bg-green-500 mr-3"></span>
+                Job Description
+              </h2>
+              <div className="space-y-4 text-gray-600 leading-relaxed">
+                <p>{job.description || "No description provided."}</p>
+              </div>
+            </div>
+
+           
+            <div>
+              <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
+                <span className="w-1 h-6 bg-green-500 mr-3"></span>
+                Responsibilities
+              </h2>
+              <ul className="space-y-3">
+                {responsibilitiesList.length > 0 ? (
+                  responsibilitiesList.map((res, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-gray-600">{res}</span>
+                    </li>
+                  ))
                 ) : (
-                  <span className="text-gray-500">Workspace Image Placeholder</span>
+                  <li className="text-gray-600">No responsibilities listed.</li>
                 )}
-              </div>
+              </ul>
+            </div>
 
-              {/* Job Description */}
-              <div>
-                <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
-                  <span className="w-1 h-6 bg-green-500 mr-3"></span>
-                  Job Description
-                </h2>
-                <div className="space-y-4 text-gray-600 leading-relaxed">
-                  <p>{job.description || "No description provided."}</p>
-                </div>
-              </div>
+           
+            <div>
+              <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
+                <span className="w-1 h-6 bg-green-500 mr-3"></span>
+                Education + Experience
+              </h2>
+              <ul className="space-y-3">
+                {educationList.length > 0 ? (
+                  educationList.map((edu, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-gray-600">{edu}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-600">No education or experience details provided.</li>
+                )}
+              </ul>
+            </div>
 
-              {/* Responsibilities */}
-              <div>
-                <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
-                  <span className="w-1 h-6 bg-green-500 mr-3"></span>
-                  Responsibilities
-                </h2>
-                <ul className="space-y-3">
-                  {responsibilitiesList.length > 0 ? (
-                    responsibilitiesList.map((res, index) => (
-                      <li key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-600">{res}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-gray-600">No responsibilities listed.</li>
-                  )}
-                </ul>
-              </div>
+            
+            <div>
+              <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
+                <span className="w-1 h-6 bg-green-500 mr-3"></span>
+                Other Benefits
+              </h2>
+              <ul className="space-y-3">
+                {benefitsList.length > 0 ? (
+                  benefitsList.map((benefit, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-gray-600">{benefit}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-600">No additional benefits listed.</li>
+                )}
+              </ul>
+            </div>
 
-              {/* Education + Experience */}
-              <div>
-                <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
-                  <span className="w-1 h-6 bg-green-500 mr-3"></span>
-                  Education + Experience
-                </h2>
-                <ul className="space-y-3">
-                  {educationList.length > 0 ? (
-                    educationList.map((edu, index) => (
-                      <li key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-600">{edu}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-gray-600">No education or experience details provided.</li>
-                  )}
-                </ul>
-              </div>
-
-              {/* Other Benefits */}
-              <div>
-                <h2 className="text-xl font-semibold text-green-600 mb-4 flex items-center">
-                  <span className="w-1 h-6 bg-green-500 mr-3"></span>
-                  Other Benefits
-                </h2>
-                <ul className="space-y-3">
-                  {benefitsList.length > 0 ? (
-                    benefitsList.map((benefit, index) => (
-                      <li key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-600">{benefit}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-gray-600">No additional benefits listed.</li>
-                  )}
-                </ul>
-              </div>
-
-              {/* Bottom Action Buttons */}
-              <div className="flex items-center justify-center space-x-4 pt-8">
-                <button className="flex items-center space-x-2 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                  <Heart className="w-4 h-4" />
-                  <span>Save Job</span>
-                </button>
-                <button className="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600">Apply Now</button>
-              </div>
+           
+            <div className="flex items-center justify-center space-x-4 pt-8">
+              <button
+                className={`flex items-center space-x-2 px-6 py-3 border rounded-lg transition-colors duration-200
+                  ${isJobSaved 
+                    ? 'border-green-500 text-green-600 bg-green-50' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-green-400 hover:text-green-500'
+                  }`}
+                onClick={() => handleSaveButton(job.id)}
+                disabled={isJobSaved} 
+              >
+                <Heart className={`w-4 h-4 ${isJobSaved ? 'fill-green-500 text-green-500' : 'text-gray-700 group-hover:text-green-500'}`} />
+                <span>{isJobSaved ? "Saved" : "Save Job"}</span>
+              </button>
+              <Link to={`/jobs/${id}/apply`} className="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600">Apply Now</Link>
+            </div>
           </div>
 
           {/* Right Column - Sidebar */}
@@ -279,7 +380,7 @@ export default function JobDetails() {
           </div>
         </div>
       </div>
-      {/* Pass the current job ID and a flag indicating it's from job details */}
+
       <JobListingSection currentJobId={id} fromDetailsPage={true} />
     </div>
   );

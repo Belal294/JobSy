@@ -1,5 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
-import { BarChart2, Users, User, CreditCard, HelpCircle, Home } from "lucide-react";
+import { 
+  BarChart2, Users, User, CreditCard, HelpCircle, Home, Bookmark 
+} from "lucide-react"; // 🆕 Added Bookmark icon
 import SidebarItem from "./SidebarItem";
 
 export default function Sidebar() {
@@ -7,11 +9,10 @@ export default function Sidebar() {
     <div className="hidden md:flex flex-col w-64 h-screen bg-white border-r border-gray-200 shadow-xl">
       
       {/* Top Branding */}
-      <div className="flex items-center p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+      <div className="flex items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-white">
         <Link to='/'
-         className="text-blue-700 font-extrabold text-2xl flex items-center">
-          <span className="text-blue-500 mr-2">📊</span>JobSy
-        
+         className="text-green-700 font-extrabold text-2xl flex items-center">
+          <span className="text-green-500 mr-2">📊</span>JobSy
         </Link>
       </div>
 
@@ -37,11 +38,13 @@ export default function Sidebar() {
             )}
           </NavLink>
 
-          <NavLink to="/dashboard/team">
+          <NavLink to="/dashboard/saved">
             {({ isActive }) => (
-              <SidebarItem icon={<Users size={18} />} text="Team" active={isActive} />
+              <SidebarItem icon={<Bookmark size={18} />} text="Saved" active={isActive} />
             )}
-          </NavLink>
+          </NavLink> {/* 🆕 Saved Jobs NavLink */}
+
+         
 
           <NavLink to="/dashboard/profile">
             {({ isActive }) => (
@@ -49,11 +52,7 @@ export default function Sidebar() {
             )}
           </NavLink>
 
-          <NavLink to="/dashboard/billing">
-            {({ isActive }) => (
-              <SidebarItem icon={<CreditCard size={18} />} text="Billing" active={isActive} />
-            )}
-          </NavLink>
+     
 
           <NavLink to="/dashboard/support">
             {({ isActive }) => (
@@ -68,7 +67,7 @@ export default function Sidebar() {
       <div className="p-4 border-t border-gray-200">
         <NavLink
           to="/"
-          className="flex items-center justify-center gap-2 text-sm text-blue-600 font-medium hover:underline"
+          className="flex items-center justify-center gap-2 text-sm text-green-600 font-medium hover:underline"
         >
           <Home size={16} />
           Back to Home

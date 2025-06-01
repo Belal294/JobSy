@@ -4,22 +4,34 @@ from .models import Job
 class JobSerializer(serializers.ModelSerializer):
     # fallback: read-only field pulling from employer_profile if exists
     company_profile_name = serializers.CharField(
-        source='company.employer_profile.company_name', 
+        source='company.employer_profile.company_name',
         read_only=True
     )
-    
-    image = serializers.ImageField(required=False)
+
+    logo_image = serializers.ImageField(required=False, allow_null=True)
+    company_image = serializers.ImageField(required=False, allow_null=True)
+  
+
+    # Optional text fields
+    responsibilities = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    education = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    benefits = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    salary = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    experience = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    gender = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    deadline = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Job
         fields = [
             'id',
-            'image',
+            'logo_image',
             'title',
             'description',
             'company',
-            'company_name',         # manually editable field
-            'company_profile_name', # fallback from employer_profile
+            'company_name',
+            'company_image',
+            'company_profile_name',
             'location',
             'salary',
             'job_type',
