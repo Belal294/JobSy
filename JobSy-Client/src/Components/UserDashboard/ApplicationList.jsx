@@ -21,10 +21,10 @@ const ApplicationList = () => {
             Authorization: `JWT ${token}`,
           },
         });
-        setApplications(response.data.results);
+        setApplications(response.data.results || []);
       } catch (err) {
-        setError("Failed to load applications.");
         console.error(err);
+        setError("Failed to load applications.");
       } finally {
         setLoading(false);
       }
@@ -57,16 +57,39 @@ const ApplicationList = () => {
   return (
     <div className="space-y-6 mb-8 max-w-4xl mx-auto">
       <h2 className="text-black text-2xl font-bold mb-4">Your Job Applications</h2>
-      {applications.map(({ id, job, job_title, status, status_display}) => {
-        const jobData = typeof job === "object" ? job : {};
+      {applications.map(({ id, job_detail, status, status_display }) => {
+        const jobData = job_detail || {};
+        const {
+          id: jobId,
+          title,
+          company_name,
+          location,
+          logo_image,
+          salary,
+        } = jobData;
+
+        const getStatusBadge = (status) => {
+          switch (status) {
+            case "accepted":
+              return "bg-green-100 text-green-800";
+            case "rejected":
+              return "bg-red-100 text-red-800";
+            case "pending":
+              return "bg-yellow-100 text-yellow-800";
+            default:
+              return "bg-gray-100 text-gray-700";
+          }
+        };
+
         return (
-          <Link to={`/jobs/${jobData.id || job}`} key={id}>
+          <Link to={`/jobs/${jobId || ""}`} key={id}>
             <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out border border-gray-200 relative overflow-hidden p-6 flex items-center justify-between hover:transform hover:translate-x-1 hover:scale-100 hover:before:absolute hover:before:inset-y-0 hover:before:left-0 hover:before:bg-green-500 hover:before:w-1 before:transition-all before:duration-300 before:ease-in-out">
+              
               {/* Logo */}
               <div className="flex-shrink-0 mr-6 flex items-center">
                 <img
-                  src={jobData.logo_image || default_logo}
-                  alt={`${jobData.company_name || "Company"} logo`}
+                  src={logo_image || default_logo}
+                  alt={`${company_name || "Company"} logo`}
                   className="w-16 h-16 object-contain"
                 />
               </div>
@@ -74,33 +97,29 @@ const ApplicationList = () => {
               {/* Job info */}
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-semibold text-gray-900 truncate">
-                  {jobData.title || job_title || "Job Title"}
+                  {title || "Job Title"}
                 </h3>
                 <p className="text-gray-500 text-sm mb-1 truncate">
-                  {jobData.company_name || "Unknown Company"}
+                  {company_name || "Unknown Company"}
                 </p>
                 <div className="flex items-center text-gray-400 text-sm">
                   <MapPin className="w-4 h-4 mr-1" />
-                  <span className="truncate">{jobData.location || "Unknown Location"}</span>
+                  <span className="truncate">{location || "Unknown Location"}</span>
                 </div>
               </div>
 
               {/* Status and salary */}
               <div className="flex flex-col items-end space-y-1 ml-6 flex-shrink-0">
                 <span
-                  className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                    status === "accepted"
-                      ? "bg-green-100 text-green-800"
-                      : status === "rejected"
-                      ? "bg-red-100 text-red-800"
-                      : status === "pending"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-100 text-gray-700"
-                  } capitalize`}
+                  className={`text-sm font-semibold px-3 py-1 rounded-full capitalize ${getStatusBadge(
+                    status
+                  )}`}
                 >
                   {status_display || status || "Unknown Status"}
                 </span>
-                <span className="text-sm text-gray-600">${jobData.salary || "N/A"}</span>
+                <span className="text-sm text-gray-600">
+                  {salary ? `$${salary}` : "Salary: N/A"}
+                </span>
               </div>
             </div>
           </Link>

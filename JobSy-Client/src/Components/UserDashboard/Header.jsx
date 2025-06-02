@@ -50,9 +50,9 @@ export default function DashboardHeader({ toggleSidebar }) {
         <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
           <Clock size={20} />
         </button>
-        <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
+        <Link to={'/dashboard/notify'} className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
           <Bell size={20} />
-        </button>
+        </Link>
 
         {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>

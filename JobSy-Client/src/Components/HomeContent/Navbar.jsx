@@ -50,7 +50,13 @@ export default function Navbar() {
   const userProfileImage = user?.profile_image;
 
   return (
-    <header className="z-10 bg-transparent">
+    // The style prop needs to be directly on an element like header or a div that wraps the header
+    <header
+      className="z-10 bg-transparent" // bg-transparent keeps the background clear
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6))`,
+      }}
+    >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-white font-bold text-xl tracking-wider">JobSy</Link>
 

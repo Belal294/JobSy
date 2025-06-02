@@ -21,7 +21,7 @@ import SavedJobs from "../UserDashboard/SavedJobs";
 import ApplicationForm from "../Pages/ApplicationComponents/ApplicationForm";
 import ApplicationList from "../UserDashboard/ApplicationList";
 import SupportPage from "../Pages/Support";
-
+import NotificationList from '../Notifications/NotificationsList'
 
 const AppRoutes = () => {
     return (
@@ -60,6 +60,7 @@ const AppRoutes = () => {
                 <Route path="saved" element={<SavedJobs/>}/>
                 <Route path="applications" element={<ApplicationList/>}/>
                 <Route path="support" element={<SupportPage/>}/>
+                <Route path="notify" element={<NotificationList />} />
 
             </Route>
 

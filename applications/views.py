@@ -29,19 +29,28 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = self.request.user
-        job = serializer.validated_data['job']
 
-        # Prevent duplicate applications
+        job = serializer.validated_data.get('job')
+        if not job:
+            raise serializers.ValidationError({"job": "Job field is required."})
+
         if Application.objects.filter(job=job, applicant=user).exists():
             raise serializers.ValidationError("You have already applied to this job!")
 
-        # Save application
         application = serializer.save(applicant=user)
+
+        # ইউজারের নাম বা ইমেইল নিরাপদে পাওয়া
+        display_name = None
+        if hasattr(user, 'get_full_name') and callable(getattr(user, 'get_full_name')):
+            full_name = user.get_full_name()
+            display_name = full_name if full_name else None
+        if not display_name:
+            display_name = user.username if hasattr(user, 'username') else user.email
 
         # Send email to applicant
         send_mail(
             subject='Your Job Application Submitted',
-            message=f'Hello {user.first_name},\n\nYour application for "{job.title}" has been received.',
+            message=f'Hello {display_name},\n\nYour application for "{job.title}" has been received.',
             from_email='noreply@jobsy.com',
             recipient_list=[user.email],
             fail_silently=True,
@@ -49,9 +58,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
         # Create notification for employer
         Notification.objects.create(
-            recipient=job.posted_by,  # Assumes Job model has a `posted_by` ForeignKey to User
+            recipient=job.posted_by,
             application=application,
-            message=f"{user.get_full_name() or user.email} applied to your job '{job.title}'."
+            message=f"{display_name} applied to your job '{job.title}'."
         )
 
     @action(detail=True, methods=['post'], url_path='set-status')

@@ -40,7 +40,7 @@ export default function Hero() {
     <div
       className="relative bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${HeroBackGround}')`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6))`,
       }}
     >
       <section className="min-h-[80vh] flex items-center relative px-4">

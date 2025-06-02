@@ -6,7 +6,7 @@ import FileUploadAndStatus from "./FileUploadAndStatus";
 import AuthContext from "../../Context/AuthContext";
 
 export default function ApplicationForm() {
-  const { user, token } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const { id } = useParams();
 
   const [formData, setFormData] = useState({
