@@ -27,7 +27,7 @@ export default function CompanySection() {
                 <img
                   src={company.logo_image} 
                   alt={`${company.name} logo`}
-                  className="max-h-12 w-auto object-contain filter brightness-0 contrast-100"
+                  className="w-40 h-40  object-contain filter brightness-0 contrast-100"
                 />
               </div>
             ))

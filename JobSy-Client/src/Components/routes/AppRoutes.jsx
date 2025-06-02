@@ -22,6 +22,7 @@ import ApplicationForm from "../Pages/ApplicationComponents/ApplicationForm";
 import ApplicationList from "../UserDashboard/ApplicationList";
 import SupportPage from "../Pages/Support";
 import NotificationList from '../Notifications/NotificationsList'
+import JobBoardLanding from "../HomeContent/JobBoardLanding";
 
 const AppRoutes = () => {
     return (
@@ -34,6 +35,7 @@ const AppRoutes = () => {
            <Route path="/blog" element={<BlogSection />} />
            <Route path="/details" element={<BlogDetailPage />} />
            <Route path="/joblist" element={<JobListingSection />} /> {/* This remains as is */}
+           <Route path="/jobboard" element={<JobBoardLanding />} /> {/* This remains as is */}
            <Route path="/jobs/:id" element={<JobDetails />} />
            <Route path="/signup" element={<SignUp/>} />
            <Route path="/postform" element={<JobPostForm/>} />

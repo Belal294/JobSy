@@ -1,6 +1,15 @@
-import { Apple, ChevronDown, ChevronUp, Play } from "lucide-react"
+import { Apple, ChevronUp, Play } from "lucide-react"; // Removed ChevronDown as it's not used
+// import { Link } from "react-router-dom"; // Removed Link as we're using a button for scroll
 
 export default function MobileAppSection() {
+  // Function to handle smooth scroll to the top of the page
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // This makes the scroll smooth
+    });
+  };
+
   return (
     <section className="relative bg-gradient-to-br from-green-400 to-green-500 min-h-screen overflow-hidden">
       {/* Background Pattern */}
@@ -135,10 +144,13 @@ export default function MobileAppSection() {
 
       {/* Bottom scroll indicator */}
       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg animate-bounce">
-              <ChevronUp className="w-6 h-6 text-gray-600" />
-            </div>
-          </div>
+        <button
+          onClick={scrollToTop} 
+          className="w-12 h-12 transition-all duration-300 bg-white rounded-full flex items-center justify-center shadow-lg animate-bounce"
+        >
+          <ChevronUp className="w-6 h-6 text-gray-600" />
+        </button>
+      </div>
     </section>
-  )
+  );
 }

@@ -8,7 +8,7 @@ export default function AboutSection() {
   return (
 
     
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white">
 
 
        <h1 className="text-4xl font-bold text-start text-gray-800 px-12 py-12 mb-5">
@@ -18,7 +18,7 @@ export default function AboutSection() {
 
         <JobBoardLanding/>
       {/* First Section - JobBoard For Freelancers */}
-      <section className="container mx-auto px-4">
+      <section className="mt-5 container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="relative">
             <img

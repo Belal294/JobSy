@@ -11,8 +11,14 @@ SECRET_KEY = config("SECRET_KEY", default="django-insecure-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-FRONTEND_PROTOCOL="http"
-FRONTEND_DOMAIN="localhost:5173"
+# FRONTEND_PROTOCOL="http"
+# FRONTEND_DOMAIN="localhost:5173"
+
+
+FRONTEND_PROTOCOL="https"
+FRONTEND_DOMAIN="jobsy-client.vercel.app"
+
+
 FRONTEND_URL = f"{FRONTEND_PROTOCOL}://{FRONTEND_DOMAIN}"
 
 
