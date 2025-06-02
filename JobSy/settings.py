@@ -83,7 +83,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'JobSy.wsgi.application'
+WSGI_APPLICATION = 'JobSy.wsgi.app'
 
 
 # Database - Supabase PostgreSQL
