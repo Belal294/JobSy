@@ -83,7 +83,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'JobSy.wsgi.app'
+WSGI_APPLICATION = 'JobSy.wsgi.application'
+
 
 # Database - Supabase PostgreSQL
 DATABASES = {
@@ -185,6 +186,7 @@ AUTH_USER_MODEL = 'users.User'
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'https://jobsy-client.vercel.app',
 ]
 
 # Default settings
