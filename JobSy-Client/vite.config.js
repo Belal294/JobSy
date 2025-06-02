@@ -8,7 +8,7 @@ export default defineConfig({
     historyApiFallback: true,
     proxy: {
       '/api': {
-        target: 'https://skill-bridge-one.vercel.app',
+        target: 'https://job-sy.vercel.app',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
