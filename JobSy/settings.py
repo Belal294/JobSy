@@ -2,6 +2,8 @@ from pathlib import Path
 from datetime import timedelta
 from decouple import config
 import cloudinary
+import os
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -115,7 +117,7 @@ USE_TZ = True
 # Static and Media files
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Cloudinary Manual Configuration
 # cloudinary.config(
@@ -156,6 +158,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer', 
+    ],
+
 }
 
 # JWT Settings
